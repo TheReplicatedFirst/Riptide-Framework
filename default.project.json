@@ -1,0 +1,31 @@
+{
+  "name": "Riptide Framework",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "RiptideShared": {
+        "$path": "src/shared"
+      },
+      "RiptideClient": {
+        "$path": "src/client"
+      }
+    },
+    "ServerStorage": {
+      "RiptideServer": {
+        "$path": "src/server"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "RiptideLauncher": {
+          "$path": "src/RiptideLauncher.client.luau"
+        }
+      }
+    },
+    "ServerScriptService": {
+      "RiptideServerLauncher": {
+        "$path": "src/RiptideServerLauncher.server.luau"
+      }
+    }
+  }
+}
