@@ -1,11 +1,6 @@
 {
-  "name": "Riptide Framework",
+  "name": "riptide",
   "tree": {
-    "$className": "DataModel",
-    "ReplicatedStorage": {
-      "Riptide": {
-        "$path": "src"
-      }
-    }
+    "$path": "src"
   }
 }
