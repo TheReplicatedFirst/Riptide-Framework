@@ -1,10 +1,10 @@
 ```text
-    ____             __  _     __   
-   / __ \___  ____  / /_(_)___/ /__ 
-  / /_/ / _ \/ __ \/ __/ / __  / _ \
- / _, _/  __/ /_/ / /_/ / /_/ /  __/
-/_/ |_|\___/ .___/\__/_/\__,_/\___/ 
-          /_/                       
+    ____  _       __  _     __   
+   / __ \(_)___  / /_(_)___/ /__ 
+  / /_/ / / __ \/ __/ / __  / _ \
+ / _, _/ / /_/ / /_/ / /_/ /  __/
+/_/ |_/_/ .___/\__/_/\__,_/\___/ 
+       /_/                       
 ```
 
 # 🌊 Riptide Framework
@@ -14,8 +14,6 @@ Riptide is a modern, modular Roblox framework supporting phased initialization a
 ## 📂 Project Structure
 
 - **`src/`**
-  - `RiptideLauncher.client.luau` → Entry point for Client.
-  - `RiptideServerLauncher.server.luau` → Entry point for Server.
   - **`client/`** → Maps to `ReplicatedStorage.RiptideClient`
     - `Core/ClientInitializer` → Main client-side engine.
     - `Modules/` → Place your client modules here. Auto-loaded recursively.
@@ -26,6 +24,11 @@ Riptide is a modern, modular Roblox framework supporting phased initialization a
     - `Utilities/Network` → Server networking (FireClient, Register, etc.).
   - **`shared/`** → Maps to `ReplicatedStorage.RiptideShared`
     - `RiptideRemotes/` → Folder automatically created by the server for networking.
+
+## 🏁 How to Start
+To start the framework in your project, simply require the initializers in your own launcher scripts.
+- **Client**: `require(ReplicatedStorage.RiptideClient.Core.ClientInitializer).Init()` (Put this in a `LocalScript` inside `StarterPlayerScripts`)
+- **Server**: `require(ServerStorage.RiptideServer.Core.ServerInitializer).Init()` (Put this in a `Script` inside `ServerScriptService`)
 
 ## 🚀 Module Lifecycle
 
