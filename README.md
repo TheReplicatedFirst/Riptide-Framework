@@ -9,59 +9,90 @@
 
 # 🌊 Riptide Framework
 
-Riptide is a modern, modular Roblox framework supporting phased initialization and unified networking.
+Riptide is a lightweight, strictly-typed, and modular Roblox framework built for Wally. It features phased initialization, safe dependency injection, and a robust unified networking layer.
 
-## 📂 Project Structure
+## 📦 Installation (Wally)
 
-- **`src/`**
-  - **`client/`** → Maps to `ReplicatedStorage.RiptideClient`
-    - `Core/ClientInitializer` → Main client-side engine.
-    - `Modules/` → Place your client modules here. Auto-loaded recursively.
-    - `Utilities/Network` → Client networking (Register, FireServer, etc.).
-  - **`server/`** → Maps to `ServerStorage.RiptideServer`
-    - `Core/ServerInitializer` → Main server-side engine.
-    - `Modules/` → Place your server modules here. Auto-loaded recursively.
-    - `Utilities/Network` → Server networking (FireClient, Register, etc.).
-  - **`shared/`** → Maps to `ReplicatedStorage.RiptideShared`
-    - `RiptideRemotes/` → Folder automatically created by the server for networking.
-
-## 🏁 How to Start
-To start the framework in your project, simply require the initializers in your own launcher scripts.
-- **Client**: `require(ReplicatedStorage.RiptideClient.Core.ClientInitializer).Init()` (Put this in a `LocalScript` inside `StarterPlayerScripts`)
-- **Server**: `require(ServerStorage.RiptideServer.Core.ServerInitializer).Init()` (Put this in a `Script` inside `ServerScriptService`)
-
-## 🚀 Module Lifecycle
-
-Modules in the `Modules/` folder are automatically loaded. You can define two optional methods:
-
-1. **`Init()`**: Called synchronously during the first phase. Use this for variable setup, internal events, and state.
-2. **`Start()`**: Called using `task.spawn` in the second phase. Safe to interact with other initialized modules.
-
-```lua
-local MyModule = {}
-
-function MyModule.Init()
-    print("Module initialized!")
-end
-
-function MyModule.Start()
-    print("Module started!")
-end
-
-return MyModule
+Add Riptide to your `wally.toml`:
+```toml
+[dependencies]
+Riptide = "thereplicatedfirst/riptide@^0.1.0"
 ```
 
-## 📡 Networking (`Network.lua`)
+## 🏁 How to Start
 
-### Client-Side
+Riptide does not start automatically. You must launch the framework from your own Server and Client entry points.
+
+### Server Initialization (`main.server.lua`)
+```lua
+local Riptide = require(ReplicatedStorage.Packages.Riptide)
+local MyServerModules = ServerScriptService:WaitForChild("MyServerModules")
+
+Riptide.Server.Launch({
+    ModulesFolder = MyServerModules
+})
+```
+
+### Client Initialization (`main.client.lua`)
+```lua
+local Riptide = require(ReplicatedStorage.Packages.Riptide)
+local MyClientModules = ReplicatedStorage:WaitForChild("MyClientModules")
+
+Riptide.Client.Launch({
+    ModulesFolder = MyClientModules
+})
+```
+
+## 🚀 Module Lifecycle & Dependency Injection (DI)
+
+Riptide completely eliminates the need for `require()` circles. Any `ModuleScript` inside your designated `ModulesFolder` will be automatically loaded into the Riptide Registry.
+
+> [!NOTE]
+> Services and Controllers are registered by their `ModuleScript` name.
+
+Methods are executed in strict phases:
+1. **`Init(Riptide)`**: Called synchronously. Use this to `GetService` or `GetController` and set up your variables.
+2. **`Start(Riptide)`**: Called asynchronously via `task.spawn`. All modules are fully initialized at this point, so it is safe to interact with them and run game logic.
+
+### Example DI Module
+```lua
+--!strict
+local RiptidePkg = require(ReplicatedStorage.Packages.Riptide)
+type Riptide = RiptidePkg.Riptide
+
+local PlayerState = {}
+
+function PlayerState:Init(Riptide: Riptide)
+    -- Easily inject other modules
+    self.DataService = Riptide.GetService("DataService")
+    
+    -- Listen to the unified Network layer
+    Riptide.Network.Register("PlayerJumped", function(player, height)
+        print(player.Name .. " jumped " .. height .. " studs!")
+    end)
+end
+
+function PlayerState:Start(Riptide: Riptide)
+    self.DataService:GiveMoney(100)
+end
+
+return PlayerState
+```
+
+## 📡 Networking (`Riptide.Network`)
+
+Riptide automatically creates a single RemoteEvent and RemoteFunction inside its own package under the hood. No `ReplicatedStorage` clutter!
+
+**Client-Side API**
 - `Network.Register(name, callback)`: Listen for server events.
-- `Network.FireServer(name, ...)`: Send event to server.
-- `Network.InvokeServer(name, ...)`: Request data from server.
+- `Network.FireServer(name, ...)`: Send event data to the server.
+- `Network.InvokeServer(name, ...)`: Request data from the server.
 
-### Server-Side
-- `Network.Register(name, callback)`: Listen for client events. Callback gets `player` as first argument.
-- `Network.FireClient(player, name, ...)`: Send event to specific player.
-- `Network.FireAllClients(name, ...)`: Send event to everyone.
+**Server-Side API**
+- `Network.Register(name, callback)`: Listen for client events. Callback automatically receives `player` as the first argument.
+- `Network.FireClient(player, name, ...)`: Send event data to a specific player.
+- `Network.FireAllClients(name, ...)`: Broadcast event data to everyone.
+- `Network.InvokeClient(player, name, ...)`: Request data from a client.
 
 ## 📄 License
 

@@ -3,16 +3,8 @@
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
-      "RiptideShared": {
-        "$path": "src/shared"
-      },
-      "RiptideClient": {
-        "$path": "src/client"
-      }
-    },
-    "ServerStorage": {
-      "RiptideServer": {
-        "$path": "src/server"
+      "Riptide": {
+        "$path": "src"
       }
     }
   }

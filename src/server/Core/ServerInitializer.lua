@@ -1,25 +1,19 @@
 local ServerInitializer = {}
-
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerStorage = game:GetService("ServerStorage")
-
-local RiptideServer = ServerStorage:WaitForChild("RiptideServer")
-local ModulesFolder = RiptideServer:WaitForChild("Modules")
+ServerInitializer._RiptideRef = nil
 
 local loadedModules = {}
 
-local function SetupNetwork()
-	local sharedFolder = ReplicatedStorage:FindFirstChild("RiptideShared")
-	if not sharedFolder then
-		sharedFolder = Instance.new("Folder")
-		sharedFolder.Name = "RiptideShared"
-		sharedFolder.Parent = ReplicatedStorage
-	end
+type Config = {
+	ModulesFolder: Folder,
+}
 
-	local folder = sharedFolder:FindFirstChild("RiptideRemotes")
+local function SetupNetwork()
+	local sharedFolder = script.Parent.Parent.Parent:WaitForChild("shared")
+
+	local folder = sharedFolder:FindFirstChild("Remotes")
 	if not folder then
 		folder = Instance.new("Folder")
-		folder.Name = "RiptideRemotes"
+		folder.Name = "Remotes"
 		folder.Parent = sharedFolder
 
 		local event = Instance.new("RemoteEvent")
@@ -34,11 +28,13 @@ local function SetupNetwork()
 	end
 end
 
-local function LoadModules(folder)
+local function LoadModules(folder: Folder)
+	local riptide = ServerInitializer._RiptideRef
 	for _, instance in ipairs(folder:GetDescendants()) do
 		if instance:IsA("ModuleScript") then
 			local ok, module = pcall(require, instance)
 			if ok and type(module) == "table" then
+				riptide._modules[instance.Name] = module
 				table.insert(loadedModules, {
 					name = instance.Name,
 					module = module,
@@ -50,16 +46,25 @@ local function LoadModules(folder)
 	end
 end
 
-ServerInitializer.Init = function()
+ServerInitializer.Launch = function(config: Config)
+	if not config or not config.ModulesFolder then
+		error("[Riptide] ServerInitializer.Launch requires a config table with a ModulesFolder.")
+	end
+
+	local riptide = ServerInitializer._RiptideRef
+	if not riptide then
+		error("[Riptide] ServerInitializer missing _RiptideRef. Ensure it's launched through the main Riptide module.")
+	end
+
 	print("🌊 [Riptide] Server Initialization Started...")
 
 	SetupNetwork()
 
-	LoadModules(ModulesFolder)
+	LoadModules(config.ModulesFolder)
 
 	for _, data in ipairs(loadedModules) do
 		if type(data.module.Init) == "function" then
-			local ok, err = pcall(data.module.Init)
+			local ok, err = pcall(data.module.Init, data.module, riptide)
 			if not ok then
 				warn(string.format("[Server] ❌ Error initializing %s: %s", data.name, tostring(err)))
 			end
@@ -68,7 +73,12 @@ ServerInitializer.Init = function()
 
 	for _, data in ipairs(loadedModules) do
 		if type(data.module.Start) == "function" then
-			task.spawn(data.module.Start)
+			task.spawn(function()
+				local ok, err = pcall(data.module.Start, data.module, riptide)
+				if not ok then
+					warn(string.format("[Server] ❌ Error starting %s: %s", data.name, tostring(err)))
+				end
+			end)
 		end
 	end
 
