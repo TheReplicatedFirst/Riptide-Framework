@@ -28,8 +28,8 @@ local EventDispatcher: RemoteEvent
 local FunctionDispatcher: RemoteFunction
 
 if IS_SERVER then
-	Remotes = Shared:FindFirstChild("Remotes") :: Folder
-	if not Remotes then
+	local existingRemotes = Shared:FindFirstChild("Remotes")
+	if not existingRemotes then
 		Remotes = Instance.new("Folder")
 		Remotes.Name = "Remotes"
 		Remotes.Parent = Shared
@@ -42,6 +42,7 @@ if IS_SERVER then
 		FunctionDispatcher.Name = "FunctionDispatcher"
 		FunctionDispatcher.Parent = Remotes
 	else
+		Remotes = existingRemotes :: Folder
 		EventDispatcher = Remotes:WaitForChild("EventDispatcher") :: RemoteEvent
 		FunctionDispatcher = Remotes:WaitForChild("FunctionDispatcher") :: RemoteFunction
 	end

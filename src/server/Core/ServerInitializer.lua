@@ -32,7 +32,7 @@ local function LoadModules(folder: Folder)
 	local riptide = ServerInitializer._RiptideRef
 	for _, instance in ipairs(folder:GetDescendants()) do
 		if instance:IsA("ModuleScript") then
-			local ok, module = pcall(require, instance)
+			local ok, module = xpcall(require, debug.traceback, instance)
 			if ok and type(module) == "table" then
 				riptide._modules[instance.Name] = module
 				table.insert(loadedModules, {
@@ -64,9 +64,9 @@ ServerInitializer.Launch = function(config: Config)
 
 	for _, data in ipairs(loadedModules) do
 		if type(data.module.Init) == "function" then
-			local ok, err = pcall(data.module.Init, data.module, riptide)
+			local ok, err = xpcall(data.module.Init, debug.traceback, data.module, riptide)
 			if not ok then
-				warn(string.format("[Server] ❌ Error initializing %s: %s", data.name, tostring(err)))
+				warn(string.format("[Server] ❌ Error initializing %s:\n%s", data.name, tostring(err)))
 			end
 		end
 	end
@@ -74,9 +74,9 @@ ServerInitializer.Launch = function(config: Config)
 	for _, data in ipairs(loadedModules) do
 		if type(data.module.Start) == "function" then
 			task.spawn(function()
-				local ok, err = pcall(data.module.Start, data.module, riptide)
+				local ok, err = xpcall(data.module.Start, debug.traceback, data.module, riptide)
 				if not ok then
-					warn(string.format("[Server] ❌ Error starting %s: %s", data.name, tostring(err)))
+					warn(string.format("[Server] ❌ Error starting %s:\n%s", data.name, tostring(err)))
 				end
 			end)
 		end

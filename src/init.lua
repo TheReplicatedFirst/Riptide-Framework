@@ -2,9 +2,13 @@
 -- Riptide Framework Entry Point
 local RunService = game:GetService("RunService")
 local NetworkModule = require(script.shared.Network)
+local SignalModule = require(script.shared.Utilities.Signal)
+local AsyncModule = require(script.shared.Utilities.Async)
 
 export type Riptide = {
 	Network: NetworkModule.NetworkAPI,
+	Signal: typeof(SignalModule),
+	Async: typeof(AsyncModule),
 	GetModule: (name: string) -> any,
 	GetService: (name: string) -> any,
 	GetController: (name: string) -> any,
@@ -16,6 +20,8 @@ export type Riptide = {
 local Riptide = {} :: Riptide
 
 Riptide._modules = {} :: { [string]: any }
+Riptide.Signal = SignalModule
+Riptide.Async = AsyncModule
 
 function Riptide.GetModule(name: string): any
 	local module = Riptide._modules[name]

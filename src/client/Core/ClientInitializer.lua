@@ -2,17 +2,21 @@
 local ClientInitializer = {}
 ClientInitializer._RiptideRef = nil
 
+local ComponentService = require(script.Parent.ComponentService)
+ClientInitializer.ComponentService = ComponentService
+
 local loadedModules = {}
 
 type Config = {
 	ModulesFolder: Folder,
+	ComponentsFolder: Folder?,
 }
 
 local function LoadModules(folder: Folder)
 	local riptide = ClientInitializer._RiptideRef
 	for _, instance in ipairs(folder:GetDescendants()) do
 		if instance:IsA("ModuleScript") then
-			local ok, module = pcall(require, instance)
+			local ok, module = xpcall(require, debug.traceback, instance)
 			if ok and type(module) == "table" then
 				riptide._modules[instance.Name] = module
 				table.insert(loadedModules, {
@@ -41,14 +45,18 @@ ClientInitializer.Launch = function(config: Config)
 	-- 1. LOAD PHASE
 	LoadModules(config.ModulesFolder)
 
+	if config.ComponentsFolder then
+		ComponentService:_start(config.ComponentsFolder)
+	end
+
 	-- 2. INIT PHASE
 	-- Execute Init methods synchronously.
 	for _, data in ipairs(loadedModules) do
 		if type(data.module.Init) == "function" then
 			-- Wrap in pcall to prevent one module's error from breaking the framework
-			local ok, err = pcall(data.module.Init, data.module, riptide)
+			local ok, err = xpcall(data.module.Init, debug.traceback, data.module, riptide)
 			if not ok then
-				warn(string.format("[Client] ❌ Error initializing %s: %s", data.name, tostring(err)))
+				warn(string.format("[Client] ❌ Error initializing %s:\n%s", data.name, tostring(err)))
 			end
 		end
 	end
@@ -58,9 +66,9 @@ ClientInitializer.Launch = function(config: Config)
 	for _, data in ipairs(loadedModules) do
 		if type(data.module.Start) == "function" then
 			task.spawn(function()
-				local ok, err = pcall(data.module.Start, data.module, riptide)
+				local ok, err = xpcall(data.module.Start, debug.traceback, data.module, riptide)
 				if not ok then
-					warn(string.format("[Client] ❌ Error starting %s: %s", data.name, tostring(err)))
+					warn(string.format("[Client] ❌ Error starting %s:\n%s", data.name, tostring(err)))
 				end
 			end)
 		end

@@ -16,7 +16,7 @@ Riptide is a lightweight, strictly-typed, and modular Roblox framework built for
 Add Riptide to your `wally.toml`:
 ```toml
 [dependencies]
-Riptide = "thereplicatedfirst/riptide@^0.1.1"
+Riptide = "thereplicatedfirst/riptide@^0.2.0"
 ```
 
 ## 🏁 How to Start
