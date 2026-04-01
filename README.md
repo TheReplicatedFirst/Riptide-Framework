@@ -1,3 +1,14 @@
+# ⚠️ MOVED TO ORGANIZATION ⚠️
+
+**This repository is archived and no longer maintained.**
+
+Riptide Framework has been moved to the official Riptide Project organization!
+Please find the latest version, issues, and discussions here:
+
+👉 **[https://github.com/riptide-project/framework](https://github.com/riptide-project/framework)** 👈
+
+---
+
 ```text
     ____  _       __  _     __   
    / __ \(_)___  / /_(_)___/ /__ 
